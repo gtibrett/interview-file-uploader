@@ -9,7 +9,17 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.565.0",
+    "@aws-sdk/credential-providers": "^3.565.0",
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
+    "@giphy/js-fetch-api": "^5.4.0",
+    "@giphy/react-components": "^9.4.1",
+    "@mui/material": "^5.15.16",
+    "aws-sdk": "^2.1610.0",
+    "axios": "^1.6.8",
     "next": "13.0.2",
+    "next-auth": "^4.24.7",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "zod": "^3.18.0"
