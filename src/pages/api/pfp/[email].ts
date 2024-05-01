@@ -36,19 +36,20 @@ function get(email: string, res: NextApiResponse<ResponseData>) {
 function post(email: string, body: IImage, res: NextApiResponse<any>) {
 	const {url} = body;
 	
-	axios.get(url)
+	axios.get(url, {
+		     responseType: 'blob'
+	     })
 	     .then(response => response.data)
 	     .then(data => {
-		     console.log(data);
 		     const command = new PutObjectCommand({
-			     Bucket: process.env.AWS_BUCKET,
-			     Key:    email as string,
-			     Body:   data,
+			     Bucket:      process.env.AWS_BUCKET,
+			     Key:         email as string,
+			     Body:        data, // FIXME: data isn't formatted correctly for S3
 			     ContentType: 'image/gif'
 		     });
 		     
 		     s3Client.send(command)
-		             .then(result => res.status(200).json({url: `https://${process.env.AWS_BUCKET}.s3.amazonaws.com/${email}`}))
+		             .then(result => res.status(200).json({url: `https://${process.env.AWS_BUCKET}.s3.amazonaws.com/${email}`, data}))
 		             .catch(error => {
 			             console.error(error);
 			             res.status(404).json({error: 'file upload failed'});
