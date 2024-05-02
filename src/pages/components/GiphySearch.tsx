@@ -1,13 +1,18 @@
 import {GifsResult, GiphyFetch} from '@giphy/js-fetch-api';
 import {IGif} from '@giphy/js-types';
 import {Gif} from '@giphy/react-components';
-import {Button, Card, CardActions, CardContent, CardHeader, Grid, InputAdornment, TextField} from '@mui/material';
+import {Button, DialogActions, DialogContent, Grid, InputAdornment, SxProps, TextField, useTheme} from '@mui/material';
 import {ChangeEvent, Dispatch, EventHandler, SetStateAction, useState} from 'react';
 
 const gf = new GiphyFetch(process.env.GIPHY_API_KEY || '');
 
+type GiphySearchProps = {
+	image: IGif | undefined;
+	setImage: Dispatch<SetStateAction<IGif | undefined>>
+}
 
-export default function GiphySearch({setImage}: { setImage: Dispatch<SetStateAction<IGif | undefined>> }) {
+export default function GiphySearch({image, setImage}: GiphySearchProps) {
+	const theme               = useTheme();
 	const [search, setSearch] = useState('');
 	const [images, setImages] = useState<GifsResult['data']>([]);
 	
@@ -26,10 +31,21 @@ export default function GiphySearch({setImage}: { setImage: Dispatch<SetStateAct
 		setSearch(ev.target.value);
 	};
 	
+	const imageSx: SxProps = {
+		'& picture': {
+			borderRadius: 2,
+			border:       '4px solid transparent',
+			padding:      .5
+		},
+		
+		'&[data-selected=true] picture': {
+			borderColor: theme.palette.primary.dark
+		}
+	};
+	
 	return (
-		<Card>
-			<CardHeader title="Choose a Profile Picture"/>
-			<CardActions>
+		<>
+			<DialogActions sx={{pt: 0, pb: 2}}>
 				<form onSubmit={handleSearch} style={{width: '100%'}}>
 					<TextField
 						label="Search"
@@ -48,11 +64,11 @@ export default function GiphySearch({setImage}: { setImage: Dispatch<SetStateAct
 						}}
 					/>
 				</form>
-			</CardActions>
-			<CardContent>
-				<Grid container spacing={2}>
+			</DialogActions>
+			<DialogContent sx={{height: '60vh', mx: -3, border: `1px solid ${theme.palette.divider}`}}>
+				<Grid container spacing={2} justifyContent="center">
 					{images.map(img => (
-						<Grid item>
+						<Grid item sx={imageSx} data-selected={img === image}>
 							<Gif
 								gif={img} width={200}
 								hideAttribution noLink
@@ -61,8 +77,8 @@ export default function GiphySearch({setImage}: { setImage: Dispatch<SetStateAct
 						</Grid>
 					))}
 				</Grid>
-			</CardContent>
-		</Card>
+			</DialogContent>
+		</>
 	
 	);
 }

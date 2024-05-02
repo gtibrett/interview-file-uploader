@@ -1,5 +1,5 @@
 import {IGif} from '@giphy/js-types';
-import {Button, DialogActions, DialogContent} from '@mui/material';
+import {Backdrop, Button, DialogActions} from '@mui/material';
 import axios from 'axios';
 import {Dispatch, SetStateAction, useState} from 'react';
 import useAuthUser from '../../auth/useAuthUser';
@@ -12,8 +12,9 @@ type PfpDialogProps = {
 };
 
 export default function PfpDialog({open, setOpen}: PfpDialogProps) {
-	const user              = useAuthUser();
-	const [image, setImage] = useState<IGif | undefined>();
+	const user                = useAuthUser();
+	const [image, setImage]   = useState<IGif | undefined>();
+	const [masked, setMasked] = useState(false);
 	
 	const handleCancel = () => {
 		setImage(undefined);
@@ -21,19 +22,27 @@ export default function PfpDialog({open, setOpen}: PfpDialogProps) {
 	};
 	
 	const handleSave = () => {
-		axios.post(`/api/pfp/${user?.email}`, image?.images['480w_still'] || {})
-		     .then(() => setOpen(false))
-		     .catch((error) => {
-			     console.error(error);
-			     setOpen(false);
-		     });
+		if (image) {
+			setMasked(true);
+			
+			axios.post(`/api/pfp/${user?.email}`, image?.images['fixed_height'] || {})
+			     .then(() => {
+				     setMasked(false);
+				     setOpen(false);
+			     })
+			     .catch((error) => {
+				     console.error(error);
+				     setMasked(false);
+				     setOpen(false);
+			     });
+		}
 	};
 	
+	
 	return (
-		<Dialog fullWidth sx={{minHeight: 400}} open={open} title="Update Profile Picture" onClose={() => setOpen(false)}>
-			<DialogContent>
-				<GiphySearch setImage={setImage}/>
-			</DialogContent>
+		<Dialog fullWidth maxWidth="lg" open={open} title="Update Profile Picture" onClose={() => setOpen(false)}>
+			<Backdrop open={masked}>Saving...</Backdrop>
+			<GiphySearch image={image} setImage={setImage}/>
 			<DialogActions>
 				<Button variant="contained" onClick={handleSave}>Save</Button>
 				<Button variant="outlined" onClick={handleCancel}>Cancel</Button>
