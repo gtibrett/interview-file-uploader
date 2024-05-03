@@ -12,7 +12,20 @@ const theme = createTheme({
 		}
 	},
 	components: {
-		MuiLink: {
+		MuiBackdrop: {
+			styleOverrides: {
+				root: {
+					zIndex: 1600
+				}
+			}
+		},
+		MuiCard:     {
+			defaultProps: {
+				variant:   'outlined',
+				elevation: 0
+			}
+		},
+		MuiLink:     {
 			defaultProps: {
 				component: LinkBehavior,
 				color:     'secondary'

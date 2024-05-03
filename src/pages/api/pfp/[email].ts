@@ -1,5 +1,4 @@
 // 'use server';
-
 import {GetObjectCommand, PutObjectCommand, S3Client} from '@aws-sdk/client-s3';
 import {IImage} from '@giphy/js-types/dist/images';
 import axios from 'axios';
@@ -33,29 +32,30 @@ function get(email: string, res: NextApiResponse<ResponseData>) {
 	        });
 }
 
-function post(email: string, body: IImage, res: NextApiResponse<any>) {
+async function post(email: string, body: IImage, res: NextApiResponse<any>) {
 	const {url} = body;
-	
 	axios.get(url, {
-		     responseType: 'blob'
-	     })
-	     .then(response => response.data)
-	     .then(data => {
-		     const command = new PutObjectCommand({
-			     Bucket:      process.env.AWS_BUCKET,
-			     Key:         email as string,
-			     Body:        data, // FIXME: data isn't formatted correctly for S3
-			     ContentType: 'image/gif'
-		     });
-		     
-		     s3Client.send(command)
-		             .then(result => res.status(200).json({url: `https://${process.env.AWS_BUCKET}.s3.amazonaws.com/${email}`, data}))
-		             .catch(error => {
-			             console.error(error);
-			             res.status(404).json({error: 'file upload failed'});
-		             });
-	     })
-	     .catch(() => res.status(404).json({error: `file could not be retrieved from giphy ${url}`, body}));
+		responseType: 'arraybuffer'
+	})
+		.then(response => response.data)
+		.then(data => {
+			if (data) {
+				const command = new PutObjectCommand({
+					Bucket:      process.env.AWS_BUCKET,
+					Key:         email as string,
+					Body:        data,
+					ContentType: 'image/gif'
+				});
+				
+				s3Client.send(command)
+				        .then(result => res.status(200).json({url: `https://${process.env.AWS_BUCKET}.s3.amazonaws.com/${email}`}))
+				        .catch(error => {
+					        console.error(error);
+					        res.status(404).json({error: 'file upload failed'});
+				        });
+			}
+		})
+	     .catch(() => res.status(404).json({error: `file could not be retrieved from giphy ${url}`}));
 }
 
 export default function handler(req: NextApiRequest, res: NextApiResponse<ResponseData>) {
